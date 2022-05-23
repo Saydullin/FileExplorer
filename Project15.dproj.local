@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.217,=C:\Users\saydu\Documents\Embarcadero\Studio\Projects\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.463,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course.pas=C:\Users\saydu\Documents\Embarcadero\Studio\Projects\Unit3.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.794,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.512,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_directory.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.726,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\courseRouter.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.186,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_file.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.512,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_directory.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.065,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.711,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.186,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit2.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_file.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.466,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Project15.dproj=C:\Users\saydu\Documents\Embarcadero\Studio\Projects\Project15.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.090,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\IOUtilsManager.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.316,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.259,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.493,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_info.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.463,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course.dfm=C:\Users\saydu\Documents\Embarcadero\Studio\Projects\Unit3.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.493,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_info.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.442,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\IOUtilsManager.pas=</Transaction>
+    <Transaction>2022.05.23 16:16:17.283,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>2022.05.23 16:16:36.702,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\uSort.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>2022.05.23 16:16:58.014,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\NewFile.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_file.dfm</Transaction>
+    <Transaction>2022.05.23 16:16:58.014,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\NewFile.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_file.pas</Transaction>
+    <Transaction>2022.05.23 16:17:08.670,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\NewDirectory.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_directory.dfm</Transaction>
+    <Transaction>2022.05.23 16:17:08.670,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\NewDirectory.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_new_directory.pas</Transaction>
+    <Transaction>2022.05.23 16:17:17.838,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Info.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_info.pas</Transaction>
+    <Transaction>2022.05.23 16:17:17.838,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Info.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course_info.dfm</Transaction>
+    <Transaction>2022.05.23 16:17:43.208,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\uRouter.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\courseRouter.pas</Transaction>
+    <Transaction>2022.05.23 16:18:02.529,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\FIleExplorer.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course.dfm</Transaction>
+    <Transaction>2022.05.23 16:18:02.529,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\FIleExplorer.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\course.pas</Transaction>
+    <Transaction>2022.05.23 16:32:11.248,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Main.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\FIleExplorer.pas</Transaction>
+    <Transaction>2022.05.23 16:32:11.248,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Main.dfm=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\FIleExplorer.dfm</Transaction>
+    <Transaction>2022.05.23 16:37:43.870,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>2022.05.23 16:37:58.239,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\uIOUtils.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>2022.05.23 17:00:31.838,=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+    <Transaction>2022.05.23 17:00:38.261,C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\uTypes.pas=C:\Users\saydu\Desktop\University\ОАиП\курсовой проект\Unit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>

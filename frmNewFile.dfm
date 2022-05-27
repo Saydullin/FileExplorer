@@ -123,7 +123,7 @@ object FormNewFile: TFormNewFile
   end
   object cbReadOnly: TCheckBox
     Left = 20
-    Top = 183
+    Top = 185
     Width = 77
     Height = 17
     Caption = 'Read only'

@@ -1,11 +1,12 @@
-object Form1: TForm1
+object FormInfo: TFormInfo
   Left = 0
   Top = 0
+  AutoSize = True
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Info'
-  ClientHeight = 267
-  ClientWidth = 515
+  ClientHeight = 217
+  ClientWidth = 518
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +23,7 @@ object Form1: TForm1
   object Label2: TLabel
     Left = 20
     Top = 20
-    Width = 475
+    Width = 478
     Height = 25
     Align = alTop
     Alignment = taCenter
@@ -43,17 +44,45 @@ object Form1: TForm1
     Width = 475
     Height = 15
     Margins.Top = 10
-    Align = alCustom
-    Alignment = taCenter
     Caption = 'CopyRight @ 2022 - Saydullin'
   end
   object Label3: TLabel
-    Left = 23
-    Top = 93
+    Left = 22
+    Top = 91
     Width = 475
     Height = 15
-    Align = alCustom
-    Alignment = taCenter
     Caption = 'Version 1.0'
+  end
+  object Label4: TLabel
+    Left = 23
+    Top = 152
+    Width = 39
+    Height = 15
+    Caption = 'GitHub'
+  end
+  object Label5: TLabel
+    Left = 23
+    Top = 178
+    Width = 31
+    Height = 15
+    Caption = 'Email'
+  end
+  object lkGithub: TLinkLabel
+    Left = 79
+    Top = 153
+    Width = 197
+    Height = 19
+    Hint = 'Github link'
+    Caption = 'github.com/Saydullin/FileExplorer'
+    TabOrder = 0
+    OnClick = lkGithubClick
+  end
+  object LinkLabel2: TLinkLabel
+    Left = 79
+    Top = 178
+    Width = 149
+    Height = 19
+    Caption = 'saydullinDev@gmail.com'
+    TabOrder = 1
   end
 end

@@ -101,26 +101,31 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="Main.pas">
+        <DCCReference Include="frmMain.pas">
             <Form>Form3</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="uRouter.pas"/>
-        <DCCReference Include="Info.pas">
-            <Form>Form1</Form>
+        <DCCReference Include="frmInfo.pas">
+            <Form>FormInfo</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="NewDirectory.pas">
+        <DCCReference Include="frmNewDirectory.pas">
             <Form>FormNewFolder</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="NewFile.pas">
+        <DCCReference Include="frmNewFile.pas">
             <Form>FormNewFile</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="uSort.pas"/>
         <DCCReference Include="uIOUtils.pas"/>
         <DCCReference Include="uTypes.pas"/>
+        <DCCReference Include="frmHistory.pas">
+            <Form>History</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="uHistoryManager.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

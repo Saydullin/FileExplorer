@@ -2,7 +2,7 @@ program Project15;
 
 uses
   Vcl.Forms,
-  frmMain in 'frmMain.pas' {Form3},
+  frmMain in 'frmMain.pas' {MainForm},
   uRouter in 'uRouter.pas',
   frmInfo in 'frmInfo.pas' {FormInfo},
   frmNewDirectory in 'frmNewDirectory.pas' {FormNewFolder},
@@ -18,7 +18,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm3, Form3);
+  Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TFormInfo, FormInfo);
   Application.CreateForm(TFormNewFolder, FormNewFolder);
   Application.CreateForm(TFormNewFile, FormNewFile);

@@ -6,10 +6,11 @@ uses
   StrUtils, System.IOUtils, ShellApi, Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Menus,
   Vcl.ButtonGroup, Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, Vcl.Buttons,
-  Vcl.FileCtrl;
+  Vcl.FileCtrl, FireDAC.UI.Intf, FireDAC.VCLUI.Wait, FireDAC.Stan.Intf,
+  FireDAC.Comp.UI;
 
 type
-  TForm3 = class(TForm)
+  TMainForm = class(TForm)
     LabelTitle: TLabel;
     MainMenu: TMainMenu;
     File1: TMenuItem;
@@ -29,6 +30,7 @@ type
     History1: TMenuItem;
     ButtonSearch: TSpeedButton;
     EditSearchFile: TEdit;
+    LabelSearching: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonSearchClick(Sender: TObject);
     procedure ButtonRouterLeftClick(Sender: TObject);
@@ -41,6 +43,7 @@ type
     procedure lvFIlesPrintColumnClick(Sender: TObject; Column: TListColumn);
     procedure lvFIlesPrintSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
+    procedure ButtonSearchFileClick(Sender: TObject);
     procedure ButtonCreateFolderClick(Sender: TObject);
     procedure ButtonCreateFileClick(Sender: TObject);
     procedure ButtonDeleteClick(Sender: TObject);
@@ -56,14 +59,15 @@ type
   end;
 
 var
-  Form3: TForm3;
+  MainForm: TMainForm;
 
 implementation
 
 {$R *.dfm}
 
 uses
-  frmNewDirectory, frmNewFile, frmHistory, frmInfo, uIOUtils, uTypes, uSort, uHistoryManager;
+  frmNewDirectory, frmNewFile, frmSearch, frmHistory, frmInfo,
+  uIOUtils, uTypes, uSort, uHistoryManager;
 
 type
   TPRouterHistory = ^TRouterHistory;
@@ -76,23 +80,36 @@ type
     First: TPRouterHistory;
     Current: TPRouterHistory;
   end;
+  TSearchThread = class(TThread)
+  private
+    Path: String;
+    FileName: String;
+    lvFilesPrint: TListView;
+    cbSearch: TComboBox;
+    cbFilter: TComboBox;
+    lSearching: TLabel;
+  protected
+    procedure Execute; override;
+  end;
+  TSizeThread = class(TThread)
+  private
+    Path: String;
+    lvFileInfo: TListView;
+    lvFileIndex: Integer;
+  protected
+    procedure Execute; override;
+  end;
 
 var
   Router: TRouter;
   SortStates: TSortStates;
+  SizeThread: TSizeThread;
+  SearchThread: TSearchThread;
 
 const
   DEFAULT_PATH = 'C:\\';
   FILTER_FOLDERS_ONLY = 'folders only';
   FILTER_FILES_ONLY = 'files only';
-
-procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
-begin
-   ListOfStrings.Clear;
-   ListOfStrings.Delimiter       := Delimiter;
-   ListOfStrings.StrictDelimiter := True;
-   ListOfStrings.DelimitedText   := Str;
-end;
 
 function GetPrevStep(Path: String): String;
 var
@@ -108,12 +125,12 @@ end;
 
 function getNormalizeSize(Bytes: UInt64): String;
 begin
-  if ((Bytes / 1000 / 1000) >= 1000) then
-    Result := Format('%.2f', [Bytes / 1000 / 1000 / 1000]) + ' GB'
-  else if (Bytes / 1000 >= 1000) then
-    Result := Format('%.2f', [Bytes / 1000 / 1000]) + ' MB'
-  else if (Bytes >= 1000) then
-    Result := Format('%.2f', [Bytes / 1000]) + ' KB'
+  if ((Bytes / 1024 / 1000) >= 1000) then
+    Result := Format('%.2f', [Bytes / 1024 / 1000 / 1000]) + ' GB'
+  else if (Bytes / 1024 >= 1000) then
+    Result := Format('%.2f', [Bytes / 1024 / 1000]) + ' MB'
+  else if (Bytes >= 1024) then
+    Result := Format('%.2f', [Bytes / 1024]) + ' KB'
   else
     Result := IntToStr(BYTES) + ' B ';
 end;
@@ -123,11 +140,11 @@ begin
   Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)));
 
   if SizeStr.Contains('GB') then
-    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1000 * 1000 * 1000);
+    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1024 * 1000 * 1000);
   if SizeStr.Contains('MB') then
-    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1000 * 1000);
+    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1024 * 1000);
   if SizeStr.Contains('KB') then
-    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1000);
+    Result := Trunc(StrToFloat(Copy(SizeStr, 0, Length(SizeStr) - 3)) * 1024);
 end;
 
 function IsInArray(Target: String; StrArray: Array of String): Boolean;
@@ -192,6 +209,104 @@ begin
     Result := Result + 'd-';
   if (TFileAttribute.faArchive in Attrs) then
     Result := Result + 'a-';
+end;
+
+procedure ShowSearchResult(List: TListView; Paths: TStringList; cbFilter, cbSearch: TComboBox);
+var
+  SR: TSearchRec;
+  FindRes: Integer;
+  Itm: TListItem;
+  MyDate: TDateTime;
+  Extensions: TStringList;
+  Folders: TStringList;
+  I: Integer;
+  SearchPath: String;
+  IsFilesOnly: Boolean;
+  IsFoldersOnly: Boolean;
+  Attrs: TFileAttributes;
+begin
+  IsFilesOnly := True;
+  IsFoldersOnly := True;
+  Extensions := TStringList.Create;
+  Extensions.Duplicates := dupIgnore;
+  Extensions.Sorted := True;
+  Folders := TStringList.Create;
+  Folders.Sorted := False;
+  Folders.Duplicates := dupIgnore;
+
+  if (cbFilter.Text = FILTER_FOLDERS_ONLY) then
+    IsFilesOnly := False
+  else if (cbFilter.Text = FILTER_FILES_ONLY) then
+    IsFoldersOnly := False;
+
+  for I := 0 to Paths.Count-1 do
+  begin
+    if (cbFilter.ItemIndex <= 0) or (cbFilter.Text = 'any')
+    or Not (IsFilesOnly) or Not (IsFoldersOnly) then
+      SearchPath := Paths[I] + '*.*'
+    else
+      SearchPath := Paths[I] + '*' + cbFilter.Text;
+    FindRes := FindFirst(SearchPath, faAnyFile, SR);
+    if (FindRes = 0) then
+    begin
+      if IsFilePath(Paths[I]) then
+      begin // File
+        if IsFilesOnly then
+        begin
+          Itm := List.Items.Add;
+          Itm.Caption := SR.Name;
+          Itm.ImageIndex := 2;
+          Itm.SubItems.Add(getNormalizeSize(SR.Size));
+          MyDate := FileDateToDateTime(SR.Time);
+          Itm.SubItems.Add(DateTimeToStr(MyDate));
+        end;
+        try
+          Extensions.Add(TPath.GetExtension(Paths[I]));
+        except
+        end;
+      end
+      else
+      begin // Folder
+        if IsFoldersOnly then
+        begin
+          Itm := List.Items.Add;
+          Itm.Caption := SR.Name;
+          Itm.ImageIndex := 0;
+          Itm.SubItems.Add(getNormalizeSize(SR.Size));
+          MyDate := FileDateToDateTime(SR.Time);
+          Itm.SubItems.Add(DateTimeToStr(MyDate));
+        end;
+
+        try
+          Folders.Add(Paths[I]);
+        except
+        end;
+      end;
+      try
+        Attrs := TPath.GetAttributes(Paths[I]);
+        Itm.SubItems.Add(GetAttrsAbbr(Attrs));
+      except
+        Itm.SubItems.Add('');
+      end;
+    end;
+
+    FindClose(SR);
+  end;
+  ResetComboBox(cbFilter, ['any', FILTER_FOLDERS_ONLY, FILTER_FILES_ONLY]);
+  ResetComboBox(cbSearch, []);
+  SetComboboxValues(Folders, cbSearch); // For Search Edit
+  SetComboboxValues(Extensions, cbFilter); // For Filter Edit
+  Extensions.Free;
+  Folders.Free;
+end;
+
+procedure TSearchThread.Execute;
+var
+  ResSearch: TStringList;
+begin
+  ResSearch := SearchFile(FileName, Path);
+  ShowSearchResult(lvFilesPrint, ResSearch, cbFilter, cbSearch);
+  lSearching.Visible := False;
 end;
 
 procedure ShowCatalog(List: TListView; Path: String; cbFilter, cbSearch: TComboBox);
@@ -358,7 +473,7 @@ begin
   RouterRightButton.Enabled := Router.Current.Prev <> nil;
 end;
 
-procedure TForm3.ButtonSearchClick(Sender: TObject);
+procedure TMainForm.ButtonSearchClick(Sender: TObject);
 begin
   ComboBoxSearch.Text := IncludeTrailingBackslash(ComboBoxSearch.Text);
   RouterAdd(ComboBoxSearch.Text, True);
@@ -384,6 +499,14 @@ begin
   Result := IsOk;
 end;
 
+procedure TSizeThread.Execute;
+var
+  Size: UInt64;
+begin
+  Size := GetDirectorySize(Path);
+  lvFileInfo.Items[lvFileIndex].SubItems[0] := GetNormalizeSize(Size);
+end;
+
 procedure setFileInfo(FilePath: String; lvFilesInfo: TListView);
 const
   Internals: Array of String = ['Archive', 'Hidden', 'System', 'Temp', 'Read only'];
@@ -396,6 +519,7 @@ const
   ];
 var
   I: Integer;
+  Index: Integer;
   Item: TListItem;
   Attrs: TFileAttributes;
   CreatedDate: TDateTime;
@@ -422,11 +546,32 @@ begin
     else
       Item.Caption := 'Folder';
     Item.SubItems.Add(ExtractFileName(FilePath));
-
-    Item := lvFilesInfo.Items.Add;
   except
   end;
 
+  Item := lvFilesInfo.Items.Add;
+  try
+    Item.Caption := 'Size';
+    Item.SubItems.Add('Loading...');
+  except
+  end;
+
+  try
+    lvFilesInfo.Items[Item.Index].SubItems[0] := 'Loading...';
+    SizeThread := TSizeThread.Create(True);
+    SizeThread.FreeOnTerminate := False;
+    SizeThread.Priority := tpNormal;
+    SizeThread.lvFileIndex := Item.Index;
+    SizeThread.Path := FilePath;
+    SizeThread.lvFileInfo := lvFilesInfo;
+    SizeThread.Resume;
+  except
+    on E: Exception do
+      lvFilesInfo.Items[Item.Index].SubItems[0] := E.Message;
+  end;
+
+
+  Item := lvFilesInfo.Items.Add;
   try
     if (IsFile) then
       Attrs := TFile.GetAttributes(FilePath)
@@ -490,7 +635,7 @@ begin
 
 end;
 
-procedure TForm3.ComboBoxFilterKeyDown(Sender: TObject; var Key: Word;
+procedure TMainForm.ComboBoxFilterKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if (Key = 13) then
@@ -501,7 +646,7 @@ begin
   end;
 end;
 
-procedure TForm3.ComboBoxSearchKeyDown(Sender: TObject; var Key: Word;
+procedure TMainForm.ComboBoxSearchKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if (Key = 13) then
@@ -514,8 +659,9 @@ begin
   end;
 end;
 
-procedure TForm3.FormCreate(Sender: TObject);
+procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  LabelSearching.Visible := False;
   SortStates.IsName := False;
   SortStates.IsSize := False;
   SortStates.IsDate := False;
@@ -531,17 +677,18 @@ begin
   SetFileInfo(DEFAULT_PATH, lvFileInfo);
 end;
 
-procedure TForm3.Help1Click(Sender: TObject);
+procedure TMainForm.Help1Click(Sender: TObject);
 begin
   FormInfo.ShowModal();
 end;
 
-procedure TForm3.History1Click(Sender: TObject);
+procedure TMainForm.History1Click(Sender: TObject);
 begin
+  History.RefreshList();
   History.ShowModal();
 end;
 
-procedure TForm3.lvFilesPrintColumnClick(Sender: TObject; Column: TListColumn);
+procedure TMainForm.lvFilesPrintColumnClick(Sender: TObject; Column: TListColumn);
 var
   lvItem: TListItem;
   FilesList: TFilesList;
@@ -590,7 +737,7 @@ begin
   end;
 end;
 
-procedure TForm3.lvFIlesPrintDblClick(Sender: TObject);
+procedure TMainForm.lvFIlesPrintDblClick(Sender: TObject);
 var
   Item: TListItem;
 begin
@@ -607,12 +754,18 @@ begin
   end;
 end;
 
-procedure TForm3.lvFIlesPrintEdited(Sender: TObject; Item: TListItem;
+procedure TMainForm.lvFIlesPrintEdited(Sender: TObject; Item: TListItem;
   var S: string);
 var
   Exception: TException;
   QAnswer: Integer;
+  Action: TActionItem;
+  DeleteFileName: String;
+  DeletePath: String;
+  FileType: String;
 begin
+  DeleteFileName := Item.Caption;
+  DeletePath := ComboBoxSearch.Text + S;
   QAnswer := MessageDlg(
         'Are you sure rename "' + Item.Caption + '" to "' + S + '"?',
         mtConfirmation,
@@ -628,10 +781,12 @@ begin
 
   if (Item.ImageIndex = 2) then
   begin // File
+    FileType := 'File';
     Exception := RenameFile(ComboBoxSearch.Text + Item.Caption, ComboBoxSearch.Text + S);
   end
   else
   begin
+    FileType := 'Directory';
     Exception := RenameDirectory(ComboBoxSearch.Text + Item.Caption, ComboBoxSearch.Text + S);
   end;
 
@@ -653,17 +808,23 @@ begin
         mbOKCancel,
         0
       );
+    Action.Target := DeleteFileName;
+    Action.Action := 'Renamed';
+    Action.TargetType := FileType;
+    Action.Path := DeletePath;
+    Action.Date := DateToStr(Now) + ' ' + TimeToStr(Now);
+    AddAction(Action);
     Self.ButtonRefreshPageClick(Sender);
   end;
 end;
 
-procedure TForm3.lvFIlesPrintSelectItem(Sender: TObject; Item: TListItem;
+procedure TMainForm.lvFIlesPrintSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 begin
   setFileInfo(ComboBoxSearch.Text + Item.Caption, lvFileInfo);
 end;
 
-procedure TForm3.ButtonCreateFileClick(Sender: TObject);
+procedure TMainForm.ButtonCreateFileClick(Sender: TObject);
 var
   ModalResult: Integer;
 begin
@@ -674,7 +835,7 @@ begin
     Self.ButtonRefreshPageClick(Sender);
 end;
 
-procedure TForm3.ButtonCreateFolderClick(Sender: TObject);
+procedure TMainForm.ButtonCreateFolderClick(Sender: TObject);
 var
   ModalResult: Integer;
 begin
@@ -685,20 +846,51 @@ begin
     Self.ButtonRefreshPageClick(Sender);
 end;
 
-procedure TForm3.ButtonRefreshPageClick(Sender: TObject);
+procedure TMainForm.ButtonSearchFileClick(Sender: TObject);
+var
+  ResSearch: TStringList;
+  MessageDlgResult: Integer;
+begin
+  MessageDlgResult := MessageDlg('Search may take some time.' + #13#10 + 'You sure you want to search?', mtConfirmation, [], 0);
+  if (MessageDlgResult <> mrOk) then
+    Exit;
+  Screen.Cursor := crSQLWait;
+  SearchThread := TSearchThread.Create(False);
+  SearchThread.FreeOnTerminate := True;
+  SearchThread.Priority := tpNormal;
+  SearchThread.Path := ComboBoxSearch.Text;
+  SearchThread.FileName := EditSearchFile.Text;
+  SearchThread.cbSearch := ComboBoxSearch;
+  SearchThread.cbFilter := ComboBoxFilter;
+  SearchThread.lSearching := LabelSearching;
+  SearchThread.lvFilesPrint := lvFilesPrint;
+  SearchThread.Resume;
+  LabelSearching.Visible := True;
+  Screen.Cursor := crDefault;
+  lvFilesPrint.Clear;
+//  ResSearch := SearchFile(EditSearchFile.Text, ComboBoxSearch.Text);
+//  LabelTitle.Caption := IntToStr(ResSearch.Count);
+//  ShowCatalog(lvFilesPrint, ComboBoxSearch.Text, ComboBoxFilter, ComboBoxSearch);
+end;
+
+procedure TMainForm.ButtonRefreshPageClick(Sender: TObject);
 begin
   ShowCatalog(lvFilesPrint, ComboBoxSearch.Text, ComboBoxFilter, ComboBoxSearch);
 end;
 
-procedure TForm3.ButtonDeleteClick(Sender: TObject);
+procedure TMainForm.ButtonDeleteClick(Sender: TObject);
 var
   Item: TListItem;
   MsgAnswer: Integer;
   FileType: String;
   Exception: TException;
   Action: TActionItem;
+  DeletePath: String;
+  DeleteFileName: String;
 begin
   Item := lvFilesPrint.Selected;
+  DeletePath := TPath.Combine(ComboBoxSearch.Text, Item.Caption);
+  DeleteFileName := Item.Caption;
   if (Item = nil) then
   begin
     MessageDlg(
@@ -710,9 +902,9 @@ begin
     Exit;
   end;
 
-  FileType := 'folder';
+  FileType := 'Directory';
   if (Item.ImageIndex = 2) then // File
-    FileType := 'file';
+    FileType := 'File';
   MsgAnswer := MessageDlg(
       'Are you sure you want to delete ' + FileType + ' "' + Item.Caption + '"?' + #13#10 +
       'The data will not remain in the basket!',
@@ -722,18 +914,19 @@ begin
     );
   if (MsgAnswer = mrYes) then
   begin
-    if (FileType = 'folder') then
-      Exception := DeleteFolder(TPath.Combine(ComboBoxSearch.Text, Item.Caption))
+    if (FileType = 'Directory') then
+      Exception := DeleteFolder(DeletePath)
     else
-      Exception := DeleteFile(TPath.Combine(ComboBoxSearch.Text, Item.Caption));
+      Exception := DeleteFile(DeletePath);
     if (Exception.Code = 0) then
     begin
       Self.ButtonRefreshPageClick(Sender);
       MessageDlg(Exception.Desc, mtInformation, mbOKCancel, 0);
-      Action.Target := FileType;
-      Action.Action := 'Delete';
-      Action.Path := TPath.Combine(ComboBoxSearch.Text, Item.Caption);
-      Action.Date := Item.SubItems[1];
+      Action.Target := DeleteFileName;
+      Action.Action := 'Deleted';
+      Action.TargetType := FileType;
+      Action.Path := DeletePath;
+      Action.Date := DateToStr(Now) + ' ' + TimeToStr(Now);
       AddAction(Action);
     end
     else
@@ -741,7 +934,7 @@ begin
   end;
 end;
 
-procedure TForm3.ButtonRouterLeftClick(Sender: TObject);
+procedure TMainForm.ButtonRouterLeftClick(Sender: TObject);
 var
   PrevPath: String;
 begin
@@ -752,7 +945,7 @@ begin
   CheckRouterArrows(ButtonRouterLeft, ButtonRouterRight);
 end;
 
-procedure TForm3.ButtonRouterRightClick(Sender: TObject);
+procedure TMainForm.ButtonRouterRightClick(Sender: TObject);
 var
   NextPath: String;
 begin

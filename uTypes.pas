@@ -24,6 +24,7 @@ type
   TActionItem = record
     Target: String[255];
     Action: String[255];
+    TargetType: String[255];
     Path: String[255];
     Date: String[255];
   end;

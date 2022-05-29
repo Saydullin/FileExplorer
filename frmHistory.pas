@@ -18,9 +18,9 @@ type
     procedure Update1Click(Sender: TObject);
   private
     { Private declarations }
-    procedure RefreshList(Sender: TObject);
   public
     { Public declarations }
+    procedure RefreshList();
   end;
 
 var
@@ -46,6 +46,7 @@ begin
     lvItem := lvHistory.Items.Add;
     lvItem.Caption := HistoryItem.Data.Target;
     lvItem.SubItems.Add(HistoryItem.Data.Action);
+    lvItem.SubItems.Add(HistoryItem.Data.TargetType);
     lvItem.SubItems.Add(HistoryItem.Data.Path);
     lvItem.SubItems.Add(HistoryItem.Data.Date);
     HistoryItem := HistoryItem.Next;
@@ -53,7 +54,7 @@ begin
 
 end;
 
-procedure THistory.RefreshList(Sender: TObject);
+procedure THistory.RefreshList();
 var
   HistoryData: TAHistory;
 begin
@@ -65,12 +66,7 @@ procedure THistory.Update1Click(Sender: TObject);
 var
   Action: TActionItem;
 begin
-  Action.Target := 'Test';
-  Action.Action := 'Deleted';
-  Action.Path := '\';
-  Action.Date := 'Current Date';
-  AddAction(Action);
-  RefreshList(Sender);
+  RefreshList();
 end;
 
 procedure THistory.Clear1Click(Sender: TObject);
@@ -88,14 +84,14 @@ begin
   if (dlgAnswer = mrYes) then
   begin
     ClearFile();
-    RefreshList(Sender);
+    RefreshList();
   end;
 
 end;
 
 procedure THistory.FormCreate(Sender: TObject);
 begin
-  RefreshList(Sender);
+  RefreshList();
 end;
 
 end.

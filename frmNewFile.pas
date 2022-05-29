@@ -33,7 +33,7 @@ implementation
 {$R *.dfm}
 
 uses
-  System.IOUtils;
+  System.IOUtils, uHistoryManager, uTypes, DateUtils;
 
 type
   TException = record
@@ -68,6 +68,7 @@ end;
 procedure TFormNewFile.Button1Click(Sender: TObject);
 var
   ECreateFolder: TException;
+  Action: TActionItem;
 begin
   ECreateFolder := CreateFile(EditPath.Text, EditFileName.Text);
   SetFileAttributes(
@@ -81,6 +82,12 @@ begin
   if (ECreateFolder.Code = 0) then
   begin
     MessageDlg('File created successfully', mtInformation, mbOKCancel, 0);
+    Action.Target := EditFileName.Text;
+    Action.Action := 'Created';
+    Action.TargetType := 'File';
+    Action.Path := TPath.Combine(EditPath.Text, EditFileName.Text);
+    Action.Date := DateToStr(Now) + ' ' + TimeToStr(Now);
+    AddAction(Action);
     FormNewFile.Close;
   end
   else

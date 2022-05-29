@@ -6,7 +6,7 @@ object History: THistory
   BorderStyle = bsSingle
   Caption = 'History'
   ClientHeight = 451
-  ClientWidth = 683
+  ClientWidth = 783
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -25,7 +25,7 @@ object History: THistory
   object Label1: TLabel
     Left = 20
     Top = 20
-    Width = 643
+    Width = 743
     Height = 18
     Align = alTop
     Alignment = taCenter
@@ -36,13 +36,12 @@ object History: THistory
     Font.Name = 'Roboto'
     Font.Style = []
     ParentFont = False
-    ExplicitLeft = 23
-    ExplicitWidth = 640
+    ExplicitWidth = 50
   end
   object lvHistory: TListView
     Left = 20
     Top = 58
-    Width = 640
+    Width = 743
     Height = 373
     Columns = <
       item
@@ -52,6 +51,10 @@ object History: THistory
       item
         Caption = 'Action'
         Width = 100
+      end
+      item
+        Caption = 'Type'
+        Width = 110
       end
       item
         Caption = 'Path'

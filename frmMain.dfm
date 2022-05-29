@@ -1,4 +1,4 @@
-object Form3: TForm3
+object MainForm: TMainForm
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize, biHelp]
@@ -35,7 +35,7 @@ object Form3: TForm3
     Font.Name = 'Roboto'
     Font.Style = []
     ParentFont = False
-    ExplicitWidth = 1093
+    ExplicitWidth = 88
   end
   object ButtonRouterLeft: TSpeedButton
     Left = 20
@@ -117,7 +117,7 @@ object Form3: TForm3
     Caption = 'Select file or folder to see information here'
   end
   object ButtonSearch: TSpeedButton
-    Left = 695
+    Left = 696
     Top = 100
     Width = 27
     Height = 27
@@ -126,7 +126,14 @@ object Form3: TForm3
     Images = ImageList1
     ParentShowHint = False
     ShowHint = True
-    OnClick = ButtonRefreshPageClick
+    OnClick = ButtonSearchFileClick
+  end
+  object LabelSearching: TLabel
+    Left = 569
+    Top = 81
+    Width = 67
+    Height = 15
+    Caption = 'Searching...'
   end
   object lvFIlesPrint: TListView
     Left = 20

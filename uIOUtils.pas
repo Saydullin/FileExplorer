@@ -8,6 +8,7 @@ uses
 function CreateFolder(Path: String; FolderName: String): TException;
 function DeleteFolder(Path: String): TException;
 function DeleteFile(Path: String): TException;
+function SearchFile(FileName: String; SearchPath: String): TStringList;
 function CreateFile(Path: String; FileName: String): TException;
 function RenameFile(const OldName: String; NewName: String): TException;
 function RenameDirectory(const OldName: String; NewName: String): TException;
@@ -117,6 +118,22 @@ begin
   Result := Exc;
 end;
 
+function SearchFile(FileName: String; SearchPath: String): TStringList;
+var
+  Results: TStringList;
+  ResFilePath: String;
+begin
+  Results := TStringList.Create;
+  Results.Duplicates := dupIgnore;
+  Results.Sorted := True;
+
+  for ResFilePath in TDirectory.GetFiles(SearchPath, '*', TSearchOption.soAllDirectories) do
+    if (TPath.GetFileName(ResFilePath) = FileName) then
+      Results.Add(ResFilePath);
+
+  Result := Results;
+end;
+
 function CreateFile(Path: String; FileName: String): TException;
 var
   Exc: TException;
@@ -142,7 +159,6 @@ begin
       Exc.Desc := 'Error occurred while creating file in ' + Path + #13#10 +
       E.Message;
     end;
-
   end;
 
   Result := Exc;
@@ -195,10 +211,11 @@ var
 begin
   TotalSize := 0;
 
-  for FileName in TDirectory.GetFiles(Path, '*', TSearchOption.soAllDirectories) do
-  begin     
-    TotalSize := TotalSize + GetFileSize(FileName); 
-  end;
+  if (IsFilePath(Path)) then
+    TotalSize := GetFileSize(Path)
+  else
+    for FileName in TDirectory.GetFiles(Path, '*', TSearchOption.soAllDirectories) do
+      TotalSize := TotalSize + GetFileSize(FileName);
 
   Result := TotalSize;
 end;
